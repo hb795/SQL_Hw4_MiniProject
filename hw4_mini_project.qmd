@@ -1,0 +1,277 @@
+---
+jupyter: python3
+title: "FAA December Analysis"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    theme: cosmo
+    code-fold: true
+---
+
+
+## Airline Departure Delay Patterns
+```{python}
+import pandas as pd
+import matplotlib.pyplot as p
+import seaborn as sns
+
+sns.set(style="whitegrid")
+
+q1 = pd.read_csv("/Users/himabathula/Documents/DSAN/SQL/Homework/miniProject/SQL_Hw4_MiniProject/hw4_mini_project_question1.csv")
+q2 = pd.read_csv("/Users/himabathula/Documents/DSAN/SQL/Homework/miniProject/SQL_Hw4_MiniProject/hw4_mini_project_question2.csv")
+q3 = pd.read_csv("/Users/himabathula/Documents/DSAN/SQL/Homework/miniProject/SQL_Hw4_MiniProject/hw4_mini_project_question3.csv")
+q4 = pd.read_csv("/Users/himabathula/Documents/DSAN/SQL/Homework/miniProject/SQL_Hw4_MiniProject/hw4_mini_project_question4.csv")
+q5 = pd.read_csv("/Users/himabathula/Documents/DSAN/SQL/Homework/miniProject/SQL_Hw4_MiniProject/hw4_mini_project_question5.csv")
+q6a = pd.read_csv("/Users/himabathula/Documents/DSAN/SQL/Homework/miniProject/SQL_Hw4_MiniProject/hw4_mini_project_question6a.csv")
+q6b = pd.read_csv("/Users/himabathula/Documents/DSAN/SQL/Homework/miniProject/SQL_Hw4_MiniProject/hw4_mini_project_question6b.csv")
+q7 = pd.read_csv("/Users/himabathula/Documents/DSAN/SQL/Homework/miniProject/SQL_Hw4_MiniProject/hw4_mini_project_question7.csv")
+```
+
+```{python}
+import seaborn as sns
+import matplotlib.pyplot as p
+
+sns.set(style="whitegrid")
+
+# Rename columns
+q1 = q1.rename(columns={
+    "Name": "Airline",
+    "Max(DepDelayMinutes)": "MaxDelay"
+})
+
+q5 = q5.rename(columns={
+    "AirlineName": "Airline",
+    "AirportName": "WorstAirport",
+    "HighestAvgDelay": "WorstAvgDelay"
+})
+
+# Combined label
+q5["AirlineAirportLabel"] = q5["Airline"] + " — " + q5["WorstAirport"]
+
+q1_sorted = q1.sort_values("MaxDelay")
+q5_sorted = q5.sort_values("WorstAvgDelay")
+
+
+colors_q1 = sns.color_palette("viridis", len(q1_sorted))
+colors_q5 = sns.color_palette("magma", len(q5_sorted))
+
+fig, axes = p.subplots(1, 2, figsize=(28, 12))
+
+
+sns.barplot(
+    data=q1_sorted,
+    x="MaxDelay",
+    y="Airline",
+    hue="Airline",               
+    dodge=False,
+    legend=False,               
+    palette=colors_q1,
+    ax=axes[0]
+)
+
+axes[0].set_title("Q1: Maximum Departure Delay per Airline", fontsize=18)
+axes[0].set_xlabel("Max Delay (Minutes)")
+axes[0].set_ylabel("Airline")
+
+
+sns.barplot(
+    data=q5_sorted,
+    x="WorstAvgDelay",
+    y="AirlineAirportLabel",
+    hue="AirlineAirportLabel",   
+    dodge=False,
+    legend=False,
+    palette=colors_q5,
+    ax=axes[1]
+)
+
+axes[1].set_title("Q5: Airport Where Each Airline Has the Highest Avg Delay", fontsize=18)
+axes[1].set_xlabel("Worst Average Delay (Minutes)")
+axes[1].set_ylabel("Airline — Worst Airport")
+
+p.tight_layout()
+p.show()
+
+
+```
+
+To understand which airlines struggled most with departure delays, the maximum delay each airline experienced and the airport where each airline has its worst average delay are analyzed. The airlines with the largest maximum delays were American Airlines, Envoy Air, PSA Airlines, and SkyWest Airlines, with delays ranging from 1,800 to 3,000 minutes. The reasons for these long delays will be explored later in the report. We can also observe at which airports these airlines experience such high delays. SkyWest’s highest average delay occurs at Sarasota/Bradenton International Airport, American Airlines’ occurs at Jackson Hole Airport, and Envoy Air’s occurs at Milwaukee Airport. These findings show that the airlines experiencing the greatest delays are also facing challenges at specific airports.
+
+
+## Airport Delay Analysis
+```{python}
+print("\nAirport with the highest average departure delay:")
+print(q4)
+```
+
+Among all the airports, HGR showed the highest average departure delay at 102.5 minutes. HGR is a small regional airport. One question that arises is whether the airlines with the largest maximum delays are the same carriers that serve smaller regions like Hagerstown. After a quick search, the answer is yes. Large airlines often serve smaller regional and low-volume airports, which might explain why Hagerstown experiences the highest amount of delays. Additionally, BWI is Maryland’s most well-known international airport, so service may be more limited for smaller airports like HGR.
+
+## Early Departures Analysis
+```{python}
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set(style="whitegrid")
+
+
+q2 = pd.read_csv("hw4_mini_project_question2.csv")
+
+
+q2 = q2.rename(columns={
+    "Name": "Airline",
+    "Min(DepDelay)": "MaxEarlyDeparture"
+})
+
+
+q2_sorted = q2.sort_values("MaxEarlyDeparture")
+
+
+colors = sns.color_palette("coolwarm", n_colors=len(q2_sorted))
+
+plt.figure(figsize=(14, 8))
+sns.barplot(
+    data=q2_sorted,
+    x="MaxEarlyDeparture",
+    y="Airline",
+    hue="Airline",
+    legend=False,
+    dodge=False,
+    palette=colors
+)
+
+plt.title("Q2: Largest Early Departures per Airline", fontsize=16)
+plt.xlabel("Early Departure (Minutes — Negative Means Early)")
+plt.ylabel("Airline")
+plt.tight_layout()
+plt.show()
+
+
+
+
+```
+
+This dataset details the earliest departures. Delta Air Lines showed the largest early departure, leaving an hour ahead of schedule with Alaska, JetBlue, and Allegiant. If we compare these results with the previous questions, we have additional support to justify which airlines truly are late departures, and how they stand relative to the early departures. 
+
+## Cancellation Analysis
+
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set(style="whitegrid")
+
+total_flights = q6a["TotalFlights"].iloc[0]
+cancelled_flights = q6a["TotalCancelledFlights"].iloc[0]
+
+
+cancel_rate = (cancelled_flights / total_flights) * 100
+
+print("\n===== CANCELLATION SUMMARY =====")
+print("Total Flights:", total_flights)
+print("Cancelled Flights:", cancelled_flights)
+print(f"Cancellation Rate: {cancel_rate:.2f}%")
+
+
+colors_q6 = sns.color_palette("coolwarm", n_colors=q6b["MostFrequentReason"].nunique())
+
+plt.figure(figsize=(10, 6))
+
+
+sns.countplot(
+    data=q6b,
+    x="MostFrequentReason",
+    hue="MostFrequentReason",   
+    legend=False,              
+    palette=colors_q6,
+    dodge=False                 
+)
+
+plt.title("Most Common Cancellation Reason Across Airports (Q6b)")
+plt.xlabel("Cancellation Reason")
+plt.ylabel("Number of Airports")
+
+plt.tight_layout()
+plt.show()
+
+```
+
+The cancellation rate table shows that out of 590,582 flights, only 4,151 were canceled, producing a cancellation rate of 0.70%, which is barely 1%. This shows that flights don’t get canceled very often. When examining the reasons behind these cancellations, weather stands out as the dominant cause across the largest number of airports. In contrast, carrier-related cancellations are far less frequent, and National Airspace System (NAS) issues account for an even smaller share, making them the rarest of the three primary causes.
+
+## Weekly Flight Analysis
+
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set(style="whitegrid")
+
+q3 = pd.read_csv("hw4_mini_project_question3.csv")
+q7 = pd.read_csv("hw4_mini_project_question7.csv")
+
+
+weekday_order = {
+    "Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4,
+    "Friday": 5, "Saturday": 6, "Sunday": 7
+}
+
+q3["Order"] = q3["Day"].map(weekday_order)
+q3_sorted = q3.sort_values("Order")
+
+
+q7 = q7.dropna(subset=["FlightDate", "AvgFlightsLast3Days"])
+
+
+q7["FlightDate"] = pd.to_datetime(q7["FlightDate"])
+q7_sorted = q7.sort_values("FlightDate")
+
+
+colors_q3 = sns.color_palette("viridis", n_colors=len(q3_sorted))
+
+fig, axes = plt.subplots(2, 1, figsize=(16, 12))
+
+
+sns.barplot(
+    data=q3_sorted,
+    x="Day",
+    y="count(*)",
+    hue="Day",               
+    palette=colors_q3,       
+    legend=False,            
+    dodge=False,
+    ax=axes[0]
+)
+
+axes[0].set_title("Weekly Flight Volume (Q3)", fontsize=16)
+axes[0].set_xlabel("Day of Week")
+axes[0].set_ylabel("Number of Flights")
+axes[0].tick_params(axis="x", rotation=45)
+
+
+sns.lineplot(
+    data=q7_sorted,
+    x="FlightDate",
+    y="AvgFlightsLast3Days",
+    marker="o",
+    color="blue",
+    ax=axes[1]
+)
+
+axes[1].set_title("3-Day Moving Average of Daily Flights (Q7)", fontsize=16)
+axes[1].set_xlabel("Flight Date")
+axes[1].set_ylabel("Avg Flights (Previous 3 Days)")
+axes[1].tick_params(axis="x", rotation=45)
+
+plt.tight_layout()
+plt.show()
+
+
+
+```
+
+The weekly flight volume chart shows that flights are most frequent on Sundays and Mondays. This could be due to a combination of people returning home from vacation travel or heading out on business trips at the start of the week. It is worth noting that air traffic dips in the middle of the week and gradually picks back up. The least-traveled days are Wednesday and Saturday.The 3-day moving average shows how flight activity fluctuates throughout the month. There is a sharp rise in early December, likely due to people returning home after the Thanksgiving holidays. After this rise, flights stabilize between 18–20k, with a noticeable dip around Christmas and then a gradual increase around New Year’s Day. Last year’s Christmas fell on a Wednesday, so it would be interesting to explore whether the mid-week holiday contributed to the already lower mid-week travel levels.
+
