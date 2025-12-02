@@ -1,12 +1,13 @@
 ---
-jupyter: python3
 title: "FAA December Analysis"
 format:
   html:
+    theme: cosmo
     toc: true
     toc-depth: 3
-    theme: cosmo
     code-fold: true
+jupyter: python3
+embed-resources: true
 ---
 
 

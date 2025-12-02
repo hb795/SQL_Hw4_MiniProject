@@ -98,6 +98,8 @@ SELECT
     SUM(Cancelled) AS TotalCancelledFlights
 FROM FAA.al_perf;
 
+#1 row
+
 #Question 6b
 CREATE TABLE step_cancelled AS
 SELECT
@@ -147,8 +149,6 @@ WHERE s1.AirportName = s2.AirportName
   AND s1.NumCancelled = s2.MaxCancelCount
 ORDER BY s1.AirportName;
 
-
-
 #275 rows
 
 #Qustion 7
@@ -167,6 +167,8 @@ SELECT
         ROWS BETWEEN 3 PRECEDING AND 1 PRECEDING
     ) AS AvgFlightsLast3Days
 FROM step_daily_flights;
+
+#32 rows
 
 
 
